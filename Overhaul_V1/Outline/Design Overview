@@ -1,0 +1,141 @@
+This file specifies the structure of the PiroverControl Overhaul Project.
+
+Classes:
+    - Pirover               / Represents the entire robot; manages all instances of components
+    - Main                  / Contains Main method of program. This class drives the Pirover class
+    - PinAccess             / Handles all interaction with pi4j library
+    - ArduinoSignal         / Handles all interaction with Arduino
+    - MotorGroup            / Represents and handles all interaction with groups of motors
+    - Servo                 / Represents and handles all interaction with servos
+    - DriveChassis          / Represents and handles all interaction with the Drive Chassis
+    - Camera                / Represents and handles all interaction with the Camera Arm
+    - PiroverData           / Stores all status information for the robot
+    - Settings              / Retrieves settings from config.txt and organizes them for robot to use
+    - InputReception        / Handles all input. For this version, it simply uses the Scanner class.
+
+Class UMLs:
+    Pirover:
+        -driveChassis:DriveChassis
+        -camera:Camera
+        -data:PiroverData
+        -settings:Settings
+        -<<static>>inUse:boolean
+        -----------------------------
+        <<contructor>>Pirover():Pirover
+        execCommand(command:String):void
+        shutdown():void
+
+    +Main:
+        -robot:Pirover
+        -settings:Settings
+        -------------------
+
+    /* IMPLEMENTED */
+    PinAccess {
+        -<<static>>GPIO_CONTROLLER:GpioController
+        -<<static>>PINS_BOOL:GpioPinDigitalOutput[]
+        -<<static>>PINS_PWM:GpioPinPwmOutput[]
+        -<<static>>PIN_NUMBERS:Pin[]
+        ---------------------------------
+        <<constructor>>PinAccess():PinAccess
+        initializeDigitalPin(pinNum:int):void
+        initializePwmPin(pinNum:int):void
+        pinHigh(pinNum:int):void
+        pinLow(pinNum:int):void
+        setPwmRange(pinNum:int,range:int):void
+        setPwmValue(pinNum:int,value:int):void
+        shutdown():void
+    }
+
+    ArduinoSignal:
+        -data:PiroverData
+        ------------------
+
+    MotorGroup:
+        -name:String
+        -data:PiroverData
+        --------------------------------------------------
+        <<contructor>>MotorGroup(name:String,data:PiroverData):MotorGroup
+        setState(newState:String):void
+
+    Servo:
+        -name:String
+        -data:PiroverData
+        ------------------------------------------
+        <<constructor>>Servo(name:String,data:PiroverData):Servo
+        setPosition(newPosition:int):void
+
+    DriveChassis:
+        -left:MotorGroup
+        -right:MotorGroup
+        -data:PiroverData
+        -------------------
+        <<constructor>>DriveChassis(data:PiroverData):DriveChassis
+        setState(newState:String):void
+        setSpeed(newSpeed:double):void
+
+    Camera:
+        -yaw:Servo
+        -pitch:Servo
+        -data:PiroverData
+        -------------------
+        <<constructor>>Camera(data:PiroverData):Camera
+        setPosition(position:int[]):void
+        setYaw(yaw:int):void
+        setPitch(pitch:int):void
+
+    /* IMPLEMENTED */
+    PiroverData:
+        -<<static>>inUse:boolean
+        -<<static>>componentsUsed:boolean[]
+        -<<static>>settings:Settings
+
+        -gpio:PinAccess
+
+        -<<static>>chassisState:StringBuilder
+        -<<static>>leftMotorsState:StringBuilder
+        -<<static>>rightMotorsState:StringBuilder
+        -<<static>>chassisSpeed:double
+        -<<static>>cameraPosition:int[]
+        -<<static>>arduinoSignals:int[]
+
+        -<<static>>arduinoSingalPinNums:int[]
+
+        -<<static>>motorGroupNames:String[]
+        -<<static>>servoNames:String[]
+        ----------------------------------
+        getChassisState():String
+        getLeftMotorState():String
+        getRightMotorState():String
+        getChassisSpeed():double
+        getCameraPositionString():String
+        getCameraPosition():int[]
+        getArduinoSignalPinNums():int[]
+        getArduinoSignals():int[]
+
+        setChassisState(state:String):void
+        setLeftMotorState(state:String):void
+        setRightMotorState(state:String):void
+        setChassisSpeed(speed:double):void
+        setCameraPosition(position:int[]):void
+
+        +toString():String
+
+    /* IMPLEMENTED */
+    Settings:
+        -<<static>>inUse:boolean
+        -<<static>>settingsFile:String
+        -<<static>>commandBindings:String[][]
+        -<<static>>arduinoSignalPins:int[]
+        --------------------------------------
+        <<constructor>>Settings():Settings
+        getBindings():String[][]
+        getSignalPins():int[]
+        getDefaultCameraPosition():int[]
+        +toString():String
+
+    InputReception:
+        -<<static>>scanner:Scanner
+        -<<static>>settings:Settings
+        -----------------------------
+        getInstructions():String
